@@ -30,6 +30,11 @@ app.use((req, res, next) => {
 // Serve static frontend assets
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Health check endpoint for Render zero-downtime deploys and 24/7 keepalive
+app.get('/health', (req, res) => {
+    res.json({ ok: true, status: 'healthy', timestamp: new Date().toISOString() });
+});
+
 // Global pool telemetry
 app.get('/api/pool-stats', (req, res) => {
     res.json({ ok: true, ...pool.getStats() });

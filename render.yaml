@@ -1,11 +1,12 @@
 services:
   - type: web
     name: unq-cloner
-    env: node
+    runtime: node
     plan: free
     region: oregon
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     autoDeploy: true
     envVars:
       - key: NODE_VERSION
