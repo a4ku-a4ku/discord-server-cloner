@@ -1,0 +1,20 @@
+name: 24-7 Render Uptime Keepalive
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free tier spin-down
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  uptime-ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Render Deployments
+        run: |
+          echo "Pinging UNQ Quest Runner..."
+          curl -f -s -m 25 "https://unq.onrender.com/api/status" > /dev/null && echo "✓ Quest Runner: ONLINE" || echo "Quest Runner warming up"
+          
+          echo "Pinging UNQ Server Cloner..."
+          curl -f -s -m 25 "https://unq-cloner.onrender.com/health" > /dev/null && echo "✓ Server Cloner: ONLINE" || echo "Server Cloner warming up"
