@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A4KU // Discord Server Cloner</title>
+  <meta name="description" content="High-Performance Discord Server Cloner Engine with Anti-429 Rate-Limit Protection and Multi-User Concurrency Queue.">
+  <meta name="theme-color" content="#050505">
+
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" type="image/png" href="favicon.png">
+</head>
+<body>
+  <div id="cursor-glow" class="cursor-glow" aria-hidden="true"></div>
+  <div class="app-wrapper">
+
+    <!-- Header -->
+    <header class="a4ku-header">
+      <div class="header-container">
+        <a href="/" class="brand-badge">
+          <img src="logo.png" alt="A4KU Logo" class="brand-logo-img" onerror="this.style.display='none'">
+          <div>
+            <div class="brand-title">A4KU // SERVER CLONER</div>
+            <div class="brand-sub">ENTERPRISE CONCURRENCY ENGINE</div>
+          </div>
+          <span class="brand-tag">v2.0 PRO</span>
+        </a>
+
+        <div class="header-right-group">
+          <div class="server-status-pill" id="global-status-pill" title="Server Concurrency Slots">
+            <span class="pulse-dot"></span>
+            <span id="slots-text">SLOTS: 0/10 OCCUPIED</span>
+          </div>
+
+          <button type="button" id="force-reset-btn" class="terminal-btn" title="Purge stuck slots & reset engine" style="display: none; padding: 6px 12px; font-size: 11px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; cursor: pointer; border-radius: 6px;">
+            RESET SLOTS
+          </button>
+
+          <a href="https://discord.gg/unq" target="_blank" rel="noopener noreferrer" class="discord-glow-btn" id="discord-community-btn">
+            <svg class="discord-btn-icon" viewBox="0 0 127.14 96.36" fill="currentColor">
+              <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,45.91,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,45.91,96.12,53,91.08,65.69,84.69,65.69Z"/>
+            </svg>
+            <span>discord.gg/unq</span>
+          </a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- ====================================================================
+           VIEW 1: CONFIGURATION & INPUT VIEW
+           ==================================================================== -->
+      <section class="center-card-view" id="view-input">
+        <div class="hero-box">
+          <div class="hero-header-section">
+            <h1 class="hero-title">A4KU Server Cloner</h1>
+            <p class="hero-subtitle">
+              Clone Discord roles, categories, channels, permissions, emojis, and branding from one server to another with automated rate-limit recovery.
+            </p>
+          </div>
+
+          <form id="cloner-form" class="config-form">
+            
+            <!-- Credentials Box -->
+            <div class="form-section">
+              <label class="section-label" for="token-input">DISCORD USER TOKEN</label>
+              <div class="input-wrapper">
+                <input 
+                  type="password" 
+                  id="token-input" 
+                  class="styled-input" 
+                  placeholder="Paste your Discord User Token here..." 
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                >
+                <button type="button" id="toggle-token-btn" class="toggle-visibility-btn" title="Toggle visibility">
+                  👁
+                </button>
+              </div>
+              <div class="input-hint">Tokens are executed in memory and purged immediately upon completion.</div>
+            </div>
+
+            <!-- Server IDs -->
+            <div class="form-row-2">
+              <div class="form-section">
+                <label class="section-label" for="source-id-input">SOURCE SERVER ID</label>
+                <input 
+                  type="text" 
+                  id="source-id-input" 
+                  class="styled-input" 
+                  placeholder="e.g. 112233445566778899" 
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                >
+                <div class="input-hint">The server you want to copy FROM.</div>
+              </div>
+
+              <div class="form-section">
+                <label class="section-label" for="target-id-input">TARGET SERVER ID</label>
+                <input 
+                  type="text" 
+                  id="target-id-input" 
+                  class="styled-input" 
+                  placeholder="e.g. 998877665544332211" 
+                  autocomplete="off"
+                  spellcheck="false"
+                  required
+                >
+                <div class="input-hint">The server you own / have Admin on.</div>
+              </div>
+            </div>
+
+            <!-- Modular Cloning Options -->
+            <div class="options-box">
+              <div class="options-header">MODULAR EXECUTION SETTINGS</div>
+              
+              <div class="options-grid">
+                <div class="option-item">
+                  <div class="option-title">CHANNELS & CATEGORIES</div>
+                  <select id="channels-mode" class="styled-select">
+                    <option value="delete_and_clone" selected>Wipe Target & Clone (Recommended)</option>
+                    <option value="clone_only">Clone Only (Keep Existing)</option>
+                    <option value="delete_only">Wipe Only</option>
+                    <option value="skip">Skip Channels</option>
+                  </select>
+                </div>
+
+                <div class="option-item">
+                  <div class="option-title">ROLES & PERMISSIONS</div>
+                  <select id="roles-mode" class="styled-select">
+                    <option value="delete_and_clone" selected>Wipe Target & Clone (Recommended)</option>
+                    <option value="clone_only">Clone Only (Keep Existing)</option>
+                    <option value="delete_only">Wipe Only</option>
+                    <option value="skip">Skip Roles</option>
+                  </select>
+                </div>
+
+                <div class="option-item">
+                  <div class="option-title">EMOJIS & STICKERS</div>
+                  <select id="emojis-mode" class="styled-select">
+                    <option value="delete_and_clone" selected>Wipe Target & Clone (Recommended)</option>
+                    <option value="clone_only">Clone Only (Keep Existing)</option>
+                    <option value="delete_only">Wipe Only</option>
+                    <option value="skip">Skip Emojis</option>
+                  </select>
+                </div>
+
+                <div class="option-item checkbox-item">
+                  <div class="option-title">SERVER BRANDING & INFO</div>
+                  <label class="styled-checkbox-label">
+                    <input type="checkbox" id="copy-server-info" checked>
+                    <span>Copy Name, Icon & Banner</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" id="start-btn" class="primary-btn">
+              <span>INITIALIZE SERVER CLONE</span>
+              <span>→</span>
+            </button>
+
+            <div id="error-box" class="error-banner"></div>
+
+            <div class="input-helper-text">
+              <span>🛡️ Anti-429 Rate Limiter & Concurrency Queue Enabled. Supports 10-15+ Users.</span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW 2: QUEUE WAITING SCREEN
+           ==================================================================== -->
+      <section class="queue-view" id="view-queue" style="display: none;">
+        <div class="queue-card">
+          <div class="radar-spinner"></div>
+          <div class="queue-badge" id="queue-badge-text">SYSTEM BUSY // 10/10 SLOTS OCCUPIED</div>
+          <div class="queue-position-display" id="queue-position-text">#1 IN LINE</div>
+          
+          <div class="queue-backup-badge">
+            <span class="pulse-dot"></span>
+            <span>TOKEN & SERVER PARAMETERS SECURELY QUEUED</span>
+          </div>
+
+          <p class="queue-msg">
+            All 10 concurrent clone slots are currently running.<br>
+            <strong>Your task is waiting in the queue.</strong> The exact millisecond a slot frees up, your cloning job will automatically start without any interaction needed!
+          </p>
+
+          <button type="button" id="leave-queue-btn" class="leave-queue-btn">
+            CANCEL & LEAVE QUEUE
+          </button>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           VIEW 3: LIVE CLONING DASHBOARD
+           ==================================================================== -->
+      <section class="dashboard-view" id="view-dashboard" style="display: none;">
+        
+        <!-- Live status bar -->
+        <div class="user-profile-bar">
+          <div class="user-identity">
+            <span class="server-icon-badge">⚡</span>
+            <div class="user-name-wrapper">
+              <div class="user-display-name" id="live-target-name">Target Server: Initializing...</div>
+              <div class="user-tag" id="live-step-tag">CURRENT STEP: CONNECTING</div>
+            </div>
+          </div>
+
+          <div class="session-stats-group">
+            <div class="server-status-pill" id="live-status-pill">
+              <span class="pulse-dot"></span>
+              <span id="live-status-text">CLONING ACTIVE</span>
+            </div>
+            <div class="server-status-pill">
+              <span id="session-timer">00:00</span>
+            </div>
+            <button type="button" id="abort-btn" class="abort-btn">ABORT TASK</button>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-box">
+          <div class="progress-header">
+            <span id="progress-step-text">Overall Cloning Progress</span>
+            <span id="progress-percent-text">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+
+        <!-- Metric Stat Cards -->
+        <div class="stats-banner">
+          <div class="stat-card">
+            <div class="stat-label">Roles Created</div>
+            <div class="stat-value" id="stat-roles">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Categories & Channels</div>
+            <div class="stat-value" id="stat-channels">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Emojis Cloned</div>
+            <div class="stat-value" id="stat-emojis">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">429 Retries / Safe Backoffs</div>
+            <div class="stat-value" id="stat-retries">0</div>
+          </div>
+        </div>
+
+        <!-- Active Step Banner -->
+        <div class="bg-notice-banner" id="active-step-banner">
+          <span>⚡</span>
+          <span id="active-banner-msg">Waiting for worker initialization...</span>
+        </div>
+
+        <!-- Terminal Console Log -->
+        <div class="terminal-box">
+          <div class="terminal-header">
+            <div class="terminal-title-group">
+              <span class="pulse-dot" style="background:#fff;"></span>
+              <span>A4KU // CLONER CONSOLE STREAM</span>
+            </div>
+            <div class="terminal-controls">
+              <span id="log-count">0 events</span>
+              <button type="button" id="clear-logs-btn" class="terminal-btn">CLEAR</button>
+            </div>
+          </div>
+          <div class="terminal-logs" id="terminal-logs">
+            <div class="log-entry log-info">[SYSTEM] Initializing Discord Cloner stream worker...</div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           VIEW 4: COMPLETION SCREEN
+           ==================================================================== -->
+      <section class="victory-view" id="view-victory" style="display: none;">
+        <div class="victory-card">
+          <div class="victory-icon">🎉</div>
+          <h2 class="victory-title">Server Cloned Successfully!</h2>
+          <p class="victory-subtitle" id="victory-summary-text">
+            All requested roles, categories, channels, permissions, and emojis were replicated with zero dropped elements.
+          </p>
+
+          <div class="rewards-instruction-box">
+            <div class="stat-summary-row">
+              <span>Roles Synchronized:</span>
+              <strong id="final-roles">0</strong>
+            </div>
+            <div class="stat-summary-row">
+              <span>Channels & Categories:</span>
+              <strong id="final-channels">0</strong>
+            </div>
+            <div class="stat-summary-row">
+              <span>Emojis Replicated:</span>
+              <strong id="final-emojis">0</strong>
+            </div>
+            <div class="stat-summary-row">
+              <span>Rate Limit Auto-Recoveries:</span>
+              <strong id="final-retries">0</strong>
+            </div>
+          </div>
+
+          <button type="button" id="restart-btn" class="primary-btn" style="width: 100%;">
+            CLONE ANOTHER SERVER
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="a4ku-footer">
+      <div>A4KU DISCORD SERVER CLONER • CONCURRENCY ENGINE v2.0 • STEALTH MONOCHROME</div>
+    </footer>
+  </div>
+
+  <script src="client.js"></script>
+</body>
+</html>

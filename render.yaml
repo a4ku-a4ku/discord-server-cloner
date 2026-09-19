@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: unq-cloner
+    env: node
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 18.20.4
+      - key: PORT
+        value: 10000
+      - key: MAX_CONCURRENT_CLONERS
+        value: "10"
